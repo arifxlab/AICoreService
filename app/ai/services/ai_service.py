@@ -2,12 +2,18 @@
 Business logic for AI interactions.
 """
 
+import json
+
 from app.ai.gateway.base import AIGateway
 from app.ai.guardrails import (
     InputGuardrail,
     OutputGuardrail,
 )
-from app.ai.schemas.ai import AIRequest, AIResponse
+from app.ai.schemas.ai import (
+    AIRequest,
+    AIResponse,
+)
+from app.ai.schemas.structured import SummaryResponse
 from app.ai.tools.registry import ToolRegistry
 from app.core.logging import get_logger
 
@@ -43,7 +49,9 @@ class AIService:
             model=request.model,
         )
 
-        # Validate request
+        # -------------------------
+        # Validate Request
+        # -------------------------
         validated_request = self._input_guard.validate(
             request
         )
@@ -68,7 +76,7 @@ class AIService:
                 )
 
         # -------------------------
-        # DateTime Tool
+        # Date & Time Tool
         # -------------------------
         if (
             "current time" in prompt
@@ -86,7 +94,64 @@ class AIService:
                 )
 
         # -------------------------
-        # Gateway (LLM)
+        # Structured Output
+        # -------------------------
+        if prompt.startswith("summarize:"):
+
+            structured_request = validated_request.model_copy(
+                update={
+                    "user_prompt": (
+                        "Return ONLY valid JSON using this schema:\n\n"
+                        "{\n"
+                        '  "summary": "...",\n'
+                        '  "keywords": ["...", "..."]\n'
+                        "}\n\n"
+                        + validated_request.user_prompt[10:].strip()
+                    )
+                }
+            )
+
+            response = await self._gateway.generate(
+                structured_request
+            )
+
+            # -------------------------
+            # DEBUG
+            # -------------------------
+            print("\n========== RAW MODEL RESPONSE ==========")
+            print("\n========== RAW MODEL RESPONSE ==========")
+            print(response.content)
+            print("========================================\n")
+
+            content = response.content.strip()
+
+            content = (
+                content.replace("```json", "")
+                .replace("```JSON", "")
+                .replace("```", "")
+                .strip()
+            )
+
+            print("\n========== CLEANED JSON ==========")
+            print(content)
+            print("=================================\n")
+
+            data = json.loads(content)
+
+            structured = SummaryResponse(
+                **data
+            )
+
+            return AIResponse(
+                content=structured.model_dump_json(
+                    indent=2
+                ),
+                provider=response.provider,
+                model=response.model,
+            )
+
+        # -------------------------
+        # Normal LLM Request
         # -------------------------
         response = await self._gateway.generate(
             validated_request

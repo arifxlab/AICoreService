@@ -12,6 +12,8 @@ from app.ai.services.ai_service import AIService
 from app.ai.tools.registry import ToolRegistry
 from app.core.settings import get_settings
 
+import json
+from app.ai.schemas.structured import SummaryResponse
 
 @lru_cache
 def get_provider() -> AIProvider:
