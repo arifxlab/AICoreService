@@ -7,36 +7,27 @@ from pydantic import BaseModel, Field
 
 class ToolParameter(BaseModel):
     """
-    Describes a single tool parameter.
+    Describes one tool parameter.
     """
 
-    type: str = Field(
-        ...,
-        description="Parameter type",
-    )
+    type: str
 
-    description: str = Field(
-        ...,
-        description="Parameter description",
-    )
+    description: str
 
 
 class ToolDefinition(BaseModel):
     """
-    Metadata describing a tool.
+    Describes an AI callable tool.
     """
 
-    name: str = Field(
-        ...,
-        description="Tool name",
+    name: str
+
+    description: str
+
+    properties: dict[str, ToolParameter] = Field(
+        default_factory=dict
     )
 
-    description: str = Field(
-        ...,
-        description="Tool description",
-    )
-
-    parameters: dict[str, ToolParameter] = Field(
-        default_factory=dict,
-        description="Tool parameters",
+    required: list[str] = Field(
+        default_factory=list
     )

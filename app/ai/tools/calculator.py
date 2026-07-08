@@ -16,19 +16,16 @@ class CalculatorTool(BaseTool):
 
     @property
     def definition(self) -> ToolDefinition:
-        """
-        Return calculator metadata.
-        """
-
         return ToolDefinition(
             name="calculator",
-            description="Evaluate mathematical expressions.",
-            parameters={
+            description="Evaluate a mathematical expression.",
+            properties={
                 "expression": ToolParameter(
                     type="string",
-                    description="Mathematical expression to evaluate.",
+                    description="The mathematical expression to evaluate.",
                 )
             },
+            required=["expression"],
         )
 
     async def execute(

@@ -8,12 +8,12 @@ import httpx
 
 from app.ai.providers.base import AIProvider
 from app.ai.schemas.ai import AIRequest, AIResponse
-
 from app.core.exceptions import AIProviderError
+
 
 class OpenRouterProvider(AIProvider):
     """
-    AI provider using OpenRouter API.
+    AI provider using the OpenRouter API.
     """
 
     BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -30,7 +30,6 @@ class OpenRouterProvider(AIProvider):
         self._temperature = temperature
         self._max_tokens = max_tokens
 
-
         self._client = httpx.AsyncClient(
             timeout=30.0,
         )
@@ -40,7 +39,7 @@ class OpenRouterProvider(AIProvider):
         request: AIRequest,
     ) -> AIResponse:
         """
-        Send request to OpenRouter and return response.
+        Send a request to OpenRouter.
         """
 
         payload: dict[str, Any] = {
@@ -58,6 +57,13 @@ class OpenRouterProvider(AIProvider):
                 },
             ],
         }
+
+        # -------------------------------------------------
+        # Future Tool Support
+        # -------------------------------------------------
+        if hasattr(request, "tool_schema"):
+            if request.tool_schema:
+                payload["tools"] = request.tool_schema
 
         headers = {
             "Authorization": f"Bearer {self._api_key}",
@@ -77,7 +83,6 @@ class OpenRouterProvider(AIProvider):
                 "OpenRouter Status:",
                 response.status_code,
             )
-
             print(
                 "OpenRouter Response:",
                 response.text,
@@ -96,9 +101,22 @@ class OpenRouterProvider(AIProvider):
 
         content = data["choices"][0]["message"]["content"]
 
+        stop_reason = (
+            data["choices"][0].get("finish_reason")
+            if "choices" in data
+            else None
+        )
+
         return AIResponse(
             content=content,
             provider="openrouter",
             model=self._model,
-            stop_reason=None,
+            stop_reason=stop_reason,
         )
+
+    async def close(self) -> None:
+        """
+        Close the HTTP client.
+        """
+
+        await self._client.aclose()

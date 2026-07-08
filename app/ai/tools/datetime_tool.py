@@ -5,27 +5,21 @@ Date and time tool.
 from datetime import datetime
 
 from app.ai.tools.base import BaseTool
-from app.ai.tools.tool_schema import (
-    ToolDefinition,
-    ToolParameter,
-)
+from app.ai.tools.tool_schema import ToolDefinition
 
 
 class DateTimeTool(BaseTool):
     """
-    Returns the current date and time.
+    Returns current system date and time.
     """
 
     @property
     def definition(self) -> ToolDefinition:
-        """
-        Return datetime tool metadata.
-        """
-
         return ToolDefinition(
             name="datetime",
             description="Returns the current system date and time.",
-            parameters={},
+            properties={},
+            required=[],
         )
 
     async def execute(
@@ -33,7 +27,7 @@ class DateTimeTool(BaseTool):
         arguments: str,
     ) -> str:
         """
-        Return current date and time.
+        Execute tool.
         """
 
         return datetime.now().strftime(
