@@ -9,6 +9,7 @@ from app.ai.gateway.base import AIGateway
 from app.ai.providers.base import AIProvider
 from app.ai.providers.factory import create_ai_provider
 from app.ai.services.ai_service import AIService
+from app.ai.tools.registry import ToolRegistry
 from app.core.settings import get_settings
 
 
@@ -20,9 +21,7 @@ def get_provider() -> AIProvider:
 
     settings = get_settings()
 
-    return create_ai_provider(
-        settings
-    )
+    return create_ai_provider(settings)
 
 
 @lru_cache
@@ -37,9 +36,21 @@ def get_gateway() -> AIGateway:
 
 
 @lru_cache
+def get_tool_registry() -> ToolRegistry:
+    """
+    Return tool registry.
+    """
+
+    return ToolRegistry()
+
+
+@lru_cache
 def get_ai_service() -> AIService:
     """
     Return AI service instance.
     """
 
-    return AIService(gateway=get_gateway())
+    return AIService(
+        gateway=get_gateway(),
+        tool_registry=get_tool_registry(),
+    )

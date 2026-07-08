@@ -8,6 +8,7 @@ from app.ai.guardrails import (
     OutputGuardrail,
 )
 from app.ai.schemas.ai import AIRequest, AIResponse
+from app.ai.tools.registry import ToolRegistry
 from app.core.logging import get_logger
 
 
@@ -19,8 +20,10 @@ class AIService:
     def __init__(
         self,
         gateway: AIGateway,
+        tool_registry: ToolRegistry,
     ) -> None:
         self._gateway = gateway
+        self._tools = tool_registry
 
         self._input_guard = InputGuardrail()
         self._output_guard = OutputGuardrail()
@@ -40,10 +43,51 @@ class AIService:
             model=request.model,
         )
 
+        # Validate request
         validated_request = self._input_guard.validate(
             request
         )
 
+        prompt = validated_request.user_prompt.lower()
+
+        # -------------------------
+        # Calculator Tool
+        # -------------------------
+        if prompt.startswith("calc:"):
+            tool = self._tools.get("calculator")
+
+            if tool:
+                result = await tool.execute(
+                    validated_request.user_prompt[5:].strip()
+                )
+
+                return AIResponse(
+                    content=result,
+                    provider="calculator",
+                    model="tool",
+                )
+
+        # -------------------------
+        # DateTime Tool
+        # -------------------------
+        if (
+            "current time" in prompt
+            or "current date" in prompt
+        ):
+            tool = self._tools.get("datetime")
+
+            if tool:
+                result = await tool.execute("")
+
+                return AIResponse(
+                    content=result,
+                    provider="datetime",
+                    model="tool",
+                )
+
+        # -------------------------
+        # Gateway (LLM)
+        # -------------------------
         response = await self._gateway.generate(
             validated_request
         )
