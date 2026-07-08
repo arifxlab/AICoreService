@@ -1,16 +1,16 @@
 """
-API route registration.
+API router registration.
 """
 
 from fastapi import APIRouter
 
-from app.api.v1 import chat
+from app.api.v1.chat import router as chat_router
 
 
-router = APIRouter()
+api_router = APIRouter()
 
 
-router.include_router(
-    chat.router,
-    prefix="/v1",
+api_router.include_router(
+    chat_router,
+    prefix="/api/v1",
 )

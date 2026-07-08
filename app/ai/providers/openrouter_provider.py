@@ -9,6 +9,7 @@ import httpx
 from app.ai.providers.base import AIProvider
 from app.ai.schemas.ai import AIRequest, AIResponse
 
+from app.core.exceptions import AIProviderError
 
 class OpenRouterProvider(AIProvider):
     """
@@ -82,7 +83,14 @@ class OpenRouterProvider(AIProvider):
                 response.text,
             )
 
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+
+        except httpx.HTTPStatusError as exc:
+            raise AIProviderError(
+                message="OpenRouter request failed.",
+                provider="openrouter",
+            ) from exc
 
         data = response.json()
 

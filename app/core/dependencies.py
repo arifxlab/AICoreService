@@ -4,6 +4,8 @@ Application dependencies.
 
 from functools import lru_cache
 
+from app.ai.gateway import DefaultAIGateway
+from app.ai.gateway.base import AIGateway
 from app.ai.providers.base import AIProvider
 from app.ai.providers.factory import create_ai_provider
 from app.ai.services.ai_service import AIService
@@ -24,11 +26,20 @@ def get_provider() -> AIProvider:
 
 
 @lru_cache
+def get_gateway() -> AIGateway:
+    """
+    Return configured AI gateway.
+    """
+
+    return DefaultAIGateway(
+        provider=get_provider()
+    )
+
+
+@lru_cache
 def get_ai_service() -> AIService:
     """
     Return AI service instance.
     """
 
-    return AIService(
-        provider=get_provider(),
-    )
+    return AIService(gateway=get_gateway())

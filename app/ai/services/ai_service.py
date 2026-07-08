@@ -2,12 +2,12 @@
 Business logic for AI interactions.
 """
 
-from app.ai.providers.base import AIProvider
-from app.ai.schemas.ai import AIRequest, AIResponse
+from app.ai.gateway.base import AIGateway
 from app.ai.guardrails import (
     InputGuardrail,
     OutputGuardrail,
 )
+from app.ai.schemas.ai import AIRequest, AIResponse
 from app.core.logging import get_logger
 
 
@@ -18,9 +18,9 @@ class AIService:
 
     def __init__(
         self,
-        provider: AIProvider,
+        gateway: AIGateway,
     ) -> None:
-        self._provider = provider
+        self._gateway = gateway
 
         self._input_guard = InputGuardrail()
         self._output_guard = OutputGuardrail()
@@ -40,25 +40,22 @@ class AIService:
             model=request.model,
         )
 
-        # Validate incoming request
         validated_request = self._input_guard.validate(
             request
         )
 
-        # Call AI provider
-        response = await self._provider.generate(
+        response = await self._gateway.generate(
             validated_request
         )
 
-        # Validate AI response
         validated_response = self._output_guard.validate(
             response
         )
 
         self._logger.info(
             "ai_request_completed",
-            provider=response.provider,
-            model=response.model,
+            provider=validated_response.provider,
+            model=validated_response.model,
         )
 
         return validated_response
