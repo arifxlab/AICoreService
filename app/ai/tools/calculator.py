@@ -2,23 +2,38 @@
 Calculator tool.
 """
 
-from app.ai.tools.base import AITool
+from app.ai.tools.base import BaseTool
+from app.ai.tools.tool_schema import (
+    ToolDefinition,
+    ToolParameter,
+)
 
 
-class CalculatorTool(AITool):
+class CalculatorTool(BaseTool):
     """
     Performs basic mathematical calculations.
     """
 
-    name = "calculator"
+    @property
+    def definition(self) -> ToolDefinition:
+        """
+        Return calculator metadata.
+        """
 
-    description = (
-        "Evaluate simple mathematical expressions."
-    )
+        return ToolDefinition(
+            name="calculator",
+            description="Evaluate mathematical expressions.",
+            parameters={
+                "expression": ToolParameter(
+                    type="string",
+                    description="Mathematical expression to evaluate.",
+                )
+            },
+        )
 
     async def execute(
         self,
-        input_text: str,
+        arguments: str,
     ) -> str:
         """
         Execute calculation.
@@ -26,7 +41,7 @@ class CalculatorTool(AITool):
 
         try:
             result = eval(
-                input_text,
+                arguments,
                 {"__builtins__": {}},
                 {},
             )

@@ -4,21 +4,28 @@ Base class for AI tools.
 
 from abc import ABC, abstractmethod
 
+from app.ai.tools.tool_schema import ToolDefinition
 
-class AITool(ABC):
+
+class BaseTool(ABC):
     """
-    Abstract AI tool.
+    Abstract base class for all AI tools.
     """
 
-    name: str
-    description: str
+    @property
+    @abstractmethod
+    def definition(self) -> ToolDefinition:
+        """
+        Return metadata describing this tool.
+        """
+        pass
 
     @abstractmethod
     async def execute(
         self,
-        input_text: str,
+        arguments: str,
     ) -> str:
         """
-        Execute tool.
+        Execute the tool.
         """
         pass

@@ -2,7 +2,7 @@
 Registry for AI tools.
 """
 
-from app.ai.tools.base import AITool
+from app.ai.tools.base import BaseTool
 from app.ai.tools.calculator import CalculatorTool
 from app.ai.tools.datetime_tool import DateTimeTool
 
@@ -13,7 +13,7 @@ class ToolRegistry:
     """
 
     def __init__(self) -> None:
-        self._tools: dict[str, AITool] = {
+        self._tools: dict[str, BaseTool] = {
             "calculator": CalculatorTool(),
             "datetime": DateTimeTool(),
         }
@@ -21,14 +21,14 @@ class ToolRegistry:
     def get(
         self,
         name: str,
-    ) -> AITool | None:
+    ) -> BaseTool | None:
         """
         Retrieve tool by name.
         """
 
         return self._tools.get(name)
 
-    def all(self) -> dict[str, AITool]:
+    def all(self) -> dict[str, BaseTool]:
         """
         Return all registered tools.
         """

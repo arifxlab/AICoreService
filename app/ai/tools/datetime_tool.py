@@ -4,23 +4,33 @@ Date and time tool.
 
 from datetime import datetime
 
-from app.ai.tools.base import AITool
+from app.ai.tools.base import BaseTool
+from app.ai.tools.tool_schema import (
+    ToolDefinition,
+    ToolParameter,
+)
 
 
-class DateTimeTool(AITool):
+class DateTimeTool(BaseTool):
     """
     Returns the current date and time.
     """
 
-    name = "datetime"
+    @property
+    def definition(self) -> ToolDefinition:
+        """
+        Return datetime tool metadata.
+        """
 
-    description = (
-        "Returns the current system date and time."
-    )
+        return ToolDefinition(
+            name="datetime",
+            description="Returns the current system date and time.",
+            parameters={},
+        )
 
     async def execute(
         self,
-        input_text: str,
+        arguments: str,
     ) -> str:
         """
         Return current date and time.
