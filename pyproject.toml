@@ -1,0 +1,47 @@
+[project]
+name = "ai-core-service"
+version = "0.1.0"
+description = "Production-ready AI Core Service with Portkey gateway, Claude integration, structured outputs, tool calling, and guardrails."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+
+dependencies = [
+    "anthropic>=0.116.0",
+    "fastapi>=0.139.0",
+    "httpx>=0.28.1",
+    "openai>=2.44.0",
+    "portkey-ai>=2.3.2",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.2",
+    "python-dotenv>=1.2.2",
+    "structlog>=26.1.0",
+    "uvicorn[standard]>=0.50.2",
+]
+
+[dependency-groups]
+dev = [
+    "black>=26.5.1",
+    "mypy>=2.2.0",
+    "pre-commit>=4.6.0",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.20",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "B",
+]
