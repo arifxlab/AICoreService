@@ -68,7 +68,7 @@ class OpenRouterProvider(AIProvider):
         # -------------------------------------------------
         # Future Tool Support
         # -------------------------------------------------
-        if getattr(request, "tool_schema", None):
+        if request.tool_schema:
             payload["tools"] = request.tool_schema
 
         headers = {

@@ -2,6 +2,8 @@
 Shared request and response schemas used throughout the AI Core Service.
 """
 
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -39,6 +41,11 @@ class AIRequest(BaseModel):
         default=1024,
         gt=0,
         description="Maximum number of tokens the model may generate.",
+    )
+
+    tool_schema: list[dict[str, Any]] | None = Field(
+        default=None,
+        description="Optional tool definitions for function calling.",
     )
 
 

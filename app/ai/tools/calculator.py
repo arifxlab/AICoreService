@@ -2,6 +2,8 @@
 Calculator tool implementation.
 """
 
+from typing import Any
+
 from app.ai.tools.base import BaseTool
 from app.ai.tools.tool_schema import (
     ToolDefinition,
@@ -26,7 +28,7 @@ class CalculatorTool(BaseTool):
             properties={
                 "expression": ToolParameter(
                     type="string",
-                    description=("The mathematical expression to evaluate."),
+                    description="The mathematical expression to evaluate.",
                 ),
             },
             required=["expression"],
@@ -46,17 +48,12 @@ class CalculatorTool(BaseTool):
             Result of the evaluated expression or an error message.
         """
 
-        safe_globals = {
+        safe_globals: dict[str, Any] = {
             "__builtins__": {},
         }
 
         try:
-            result = eval(
-                arguments,
-                safe_globals,
-                {},
-            )
-
+            result = eval(arguments, safe_globals, {})
             return str(result)
 
         except Exception:

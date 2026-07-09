@@ -2,10 +2,12 @@
 Application logging configuration.
 """
 
-import structlog
-from structlog.stdlib import LoggerFactory
+from typing import cast
 
-_logger = None
+import structlog
+from structlog.stdlib import BoundLogger, LoggerFactory
+
+_logger: BoundLogger | None = None
 
 
 def configure_logging() -> None:
@@ -24,7 +26,7 @@ def configure_logging() -> None:
     )
 
 
-def get_logger() -> structlog.BoundLogger:
+def get_logger() -> BoundLogger:
     """
     Return the shared application logger.
     """
@@ -32,6 +34,6 @@ def get_logger() -> structlog.BoundLogger:
     global _logger
 
     if _logger is None:
-        _logger = structlog.get_logger()
+        _logger = cast(BoundLogger, structlog.get_logger())
 
     return _logger

@@ -79,7 +79,9 @@ def get_settings() -> Settings:
     """
     Return the cached application settings.
 
-    The configuration is loaded once and reused throughout
-    the application's lifetime.
+    Settings are loaded from environment variables only once.
     """
-    return Settings()
+
+    # mypy cannot understand that BaseSettings reads values
+    # from the environment at runtime.
+    return Settings()  # type: ignore[call-arg]

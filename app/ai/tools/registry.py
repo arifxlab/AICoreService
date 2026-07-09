@@ -2,6 +2,8 @@
 Registry for AI tools.
 """
 
+from typing import Any
+
 from app.ai.tools.base import BaseTool
 from app.ai.tools.calculator import CalculatorTool
 from app.ai.tools.datetime_tool import DateTimeTool
@@ -32,12 +34,6 @@ class ToolRegistry:
     ) -> BaseTool | None:
         """
         Retrieve a tool by its registered name.
-
-        Args:
-            name: Name of the tool.
-
-        Returns:
-            The requested tool if found; otherwise None.
         """
 
         return self._tools.get(name)
@@ -47,26 +43,19 @@ class ToolRegistry:
     ) -> dict[str, BaseTool]:
         """
         Return all registered tools.
-
-        Returns:
-            Dictionary containing all registered tools.
         """
 
         return self._tools
 
     def definitions(
         self,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         """
         Convert registered tools into the OpenAI/OpenRouter
         function-calling schema.
-
-        Returns:
-            A list of function definitions compatible with
-            OpenAI/OpenRouter tool calling.
         """
 
-        tool_definitions: list[dict] = []
+        tool_definitions: list[dict[str, Any]] = []
 
         for tool in self._tools.values():
             schema = tool.definition

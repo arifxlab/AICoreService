@@ -10,7 +10,7 @@ from app.core.exceptions import AIProviderError
 
 async def ai_provider_exception_handler(
     _request: Request,
-    exc: AIProviderError,
+    exc: Exception,
 ) -> JSONResponse:
     """
     Handle AI provider failures.
@@ -19,11 +19,20 @@ async def ai_provider_exception_handler(
     AI provider request cannot be completed.
     """
 
+    if isinstance(exc, AIProviderError):
+        return JSONResponse(
+            status_code=503,
+            content={
+                "error": "AI_PROVIDER_ERROR",
+                "message": exc.message,
+                "provider": exc.provider,
+            },
+        )
+
     return JSONResponse(
-        status_code=503,
+        status_code=500,
         content={
-            "error": "AI_PROVIDER_ERROR",
-            "message": exc.message,
-            "provider": exc.provider,
+            "error": "INTERNAL_SERVER_ERROR",
+            "message": "An unexpected error occurred.",
         },
     )
