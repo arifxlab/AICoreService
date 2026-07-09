@@ -21,14 +21,17 @@ class Settings(BaseSettings):
     # ---------------------------------------------------------
 
     app_name: str = Field(
+        default="AI Core Service",
         description="Application name.",
     )
 
     app_version: str = Field(
+        default="0.1.0",
         description="Application version.",
     )
 
     environment: str = Field(
+        default="development",
         description="Deployment environment.",
     )
 
@@ -42,10 +45,12 @@ class Settings(BaseSettings):
     # ---------------------------------------------------------
 
     ai_provider: str = Field(
+        default="openrouter",
         description="Configured AI provider.",
     )
 
     openrouter_api_key: str = Field(
+        default="dummy-key",
         description="OpenRouter API key.",
     )
 
@@ -54,6 +59,7 @@ class Settings(BaseSettings):
     # ---------------------------------------------------------
 
     ai_model: str = Field(
+        default="openai/gpt-4.1-mini",
         description="Default AI model.",
     )
 
@@ -71,6 +77,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
 
@@ -79,9 +86,10 @@ def get_settings() -> Settings:
     """
     Return the cached application settings.
 
-    Settings are loaded from environment variables only once.
+    Settings are loaded once and reused throughout the
+    application's lifetime.
     """
 
-    # mypy cannot understand that BaseSettings reads values
-    # from the environment at runtime.
-    return Settings()  # type: ignore[call-arg]
+    # MyPy cannot infer that BaseSettings loads values
+    # from environment variables at runtime.
+    return Settings()
