@@ -7,27 +7,35 @@ from app.ai.schemas.ai import AIRequest
 
 class InputGuardrail:
     """
-    Validates incoming AI requests.
+    Validates AI requests before they are sent
+    to the language model.
     """
 
-    MAX_PROMPT_LENGTH = 5000
+    MAX_PROMPT_LENGTH: int = 5000
 
     def validate(
         self,
         request: AIRequest,
     ) -> AIRequest:
         """
-        Validate user input before sending to AI.
+        Validate the incoming AI request.
+
+        Raises:
+            ValueError:
+                If the prompt is empty or exceeds
+                the maximum allowed length.
         """
 
-        if not request.user_prompt.strip():
+        prompt = request.user_prompt.strip()
+
+        if not prompt:
             raise ValueError(
                 "User prompt cannot be empty."
             )
 
-        if len(request.user_prompt) > self.MAX_PROMPT_LENGTH:
+        if len(prompt) > self.MAX_PROMPT_LENGTH:
             raise ValueError(
-                "User prompt exceeds maximum length."
+                "User prompt exceeds the maximum allowed length."
             )
 
         return request

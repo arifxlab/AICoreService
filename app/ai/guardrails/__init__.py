@@ -1,7 +1,14 @@
-from app.ai.guardrails.input_guard import InputGuardrail
-from app.ai.guardrails.output_guard import OutputGuardrail
+"""
+Guardrails package.
 
-__all__ = [
+Exports the input and output guardrails used to validate
+AI requests and responses.
+"""
+
+from .input_guard import InputGuardrail
+from .output_guard import OutputGuardrail
+
+__all__ = (
     "InputGuardrail",
     "OutputGuardrail",
-]
+)

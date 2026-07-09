@@ -16,6 +16,7 @@ from app.ai.schemas.ai import (
 from app.ai.schemas.structured import SummaryResponse
 from app.ai.tools.registry import ToolRegistry
 from app.core.logging import get_logger
+from app.core.metrics import metrics
 
 
 class AIService:
@@ -44,127 +45,156 @@ class AIService:
         Generate an AI response.
         """
 
+        metrics.total_requests += 1
+
         self._logger.info(
             "ai_request_started",
             model=request.model,
         )
 
-        # -------------------------
-        # Validate Request
-        # -------------------------
-        validated_request = self._input_guard.validate(
-            request
-        )
+        try:
 
-        prompt = validated_request.user_prompt.lower()
+            # -------------------------
+            # Validate Request
+            # -------------------------
+            validated_request = self._input_guard.validate(
+                request
+            )
 
-        # -------------------------
-        # Calculator Tool
-        # -------------------------
-        if prompt.startswith("calc:"):
-            tool = self._tools.get("calculator")
+            prompt = validated_request.user_prompt.lower()
 
-            if tool:
-                result = await tool.execute(
-                    validated_request.user_prompt[5:].strip()
-                )
+            # -------------------------
+            # Calculator Tool
+            # -------------------------
+            if prompt.startswith("calc:"):
 
-                return AIResponse(
-                    content=result,
-                    provider="calculator",
-                    model="tool",
-                )
+                tool = self._tools.get("calculator")
 
-        # -------------------------
-        # Date & Time Tool
-        # -------------------------
-        if (
-            "current time" in prompt
-            or "current date" in prompt
-        ):
-            tool = self._tools.get("datetime")
+                if tool:
 
-            if tool:
-                result = await tool.execute("")
-
-                return AIResponse(
-                    content=result,
-                    provider="datetime",
-                    model="tool",
-                )
-
-        # -------------------------
-        # Structured Output
-        # -------------------------
-        if prompt.startswith("summarize:"):
-
-            structured_request = validated_request.model_copy(
-                update={
-                    "user_prompt": (
-                        "Return ONLY valid JSON using this schema:\n\n"
-                        "{\n"
-                        '  "summary": "...",\n'
-                        '  "keywords": ["...", "..."]\n'
-                        "}\n\n"
-                        + validated_request.user_prompt[10:].strip()
+                    self._logger.info(
+                        "tool_called",
+                        tool="calculator",
                     )
-                }
-            )
 
+                    result = await tool.execute(
+                        validated_request.user_prompt[5:].strip()
+                    )
+
+                    metrics.tool_calls += 1
+                    metrics.successful_requests += 1
+
+                    return AIResponse(
+                        content=result,
+                        provider="calculator",
+                        model="tool",
+                    )
+
+            # -------------------------
+            # DateTime Tool
+            # -------------------------
+            if (
+                "current date" in prompt
+                or "current time" in prompt
+            ):
+
+                tool = self._tools.get("datetime")
+
+                if tool:
+
+                    self._logger.info(
+                        "tool_called",
+                        tool="datetime",
+                    )
+
+                    result = await tool.execute("")
+
+                    metrics.tool_calls += 1
+                    metrics.successful_requests += 1
+
+                    return AIResponse(
+                        content=result,
+                        provider="datetime",
+                        model="tool",
+                    )
+
+            # -------------------------
+            # Structured Output
+            # -------------------------
+            if prompt.startswith("summarize:"):
+
+                structured_request = validated_request.model_copy(
+                    update={
+                        "user_prompt": (
+                            "Return ONLY valid JSON.\n\n"
+                            "{\n"
+                            '  "summary": "...",\n'
+                            '  "keywords": ["...", "..."]\n'
+                            "}\n\n"
+                            + validated_request.user_prompt[10:].strip()
+                        )
+                    }
+                )
+
+                response = await self._gateway.generate(
+                    structured_request
+                )
+
+                content = (
+                    response.content
+                    .replace("```json", "")
+                    .replace("```JSON", "")
+                    .replace("```", "")
+                    .strip()
+                )
+
+                data = json.loads(content)
+
+                structured = SummaryResponse(
+                    **data
+                )
+
+                metrics.provider_calls += 1
+                metrics.successful_requests += 1
+
+                self._logger.info(
+                    "ai_request_completed",
+                    provider=response.provider,
+                    model=response.model,
+                )
+
+                return AIResponse(
+                    content=structured.model_dump_json(
+                        indent=2
+                    ),
+                    provider=response.provider,
+                    model=response.model,
+                )
+
+            # -------------------------
+            # Standard LLM Request
+            # -------------------------
             response = await self._gateway.generate(
-                structured_request
+                validated_request
             )
 
-            # -------------------------
-            # DEBUG
-            # -------------------------
-            print("\n========== RAW MODEL RESPONSE ==========")
-            print("\n========== RAW MODEL RESPONSE ==========")
-            print(response.content)
-            print("========================================\n")
-
-            content = response.content.strip()
-
-            content = (
-                content.replace("```json", "")
-                .replace("```JSON", "")
-                .replace("```", "")
-                .strip()
+            validated_response = self._output_guard.validate(
+                response
             )
 
-            print("\n========== CLEANED JSON ==========")
-            print(content)
-            print("=================================\n")
+            metrics.provider_calls += 1
+            metrics.successful_requests += 1
 
-            data = json.loads(content)
-
-            structured = SummaryResponse(
-                **data
+            self._logger.info(
+                "ai_request_completed",
+                provider=validated_response.provider,
+                model=validated_response.model,
             )
 
-            return AIResponse(
-                content=structured.model_dump_json(
-                    indent=2
-                ),
-                provider=response.provider,
-                model=response.model,
-            )
+            return validated_response
 
-        # -------------------------
-        # Normal LLM Request
-        # -------------------------
-        response = await self._gateway.generate(
-            validated_request
-        )
+        except Exception:
 
-        validated_response = self._output_guard.validate(
-            response
-        )
+            metrics.failed_requests += 1
 
-        self._logger.info(
-            "ai_request_completed",
-            provider=validated_response.provider,
-            model=validated_response.model,
-        )
-
-        return validated_response
+            raise

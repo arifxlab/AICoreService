@@ -9,14 +9,18 @@ import httpx
 from app.ai.providers.base import AIProvider
 from app.ai.schemas.ai import AIRequest, AIResponse
 from app.core.exceptions import AIProviderError
+from app.core.logging import get_logger
 
 
 class OpenRouterProvider(AIProvider):
     """
-    AI provider using the OpenRouter API.
+    AI provider implementation that communicates with
+    the OpenRouter Chat Completions API.
     """
 
     BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
+    REFERER = "http://localhost:8000"
+    APP_NAME = "AI Core Service"
 
     def __init__(
         self,
@@ -30,6 +34,8 @@ class OpenRouterProvider(AIProvider):
         self._temperature = temperature
         self._max_tokens = max_tokens
 
+        self._logger = get_logger()
+
         self._client = httpx.AsyncClient(
             timeout=30.0,
         )
@@ -39,7 +45,8 @@ class OpenRouterProvider(AIProvider):
         request: AIRequest,
     ) -> AIResponse:
         """
-        Send a request to OpenRouter.
+        Send a completion request to OpenRouter and
+        return a normalized AIResponse.
         """
 
         payload: dict[str, Any] = {
@@ -61,15 +68,14 @@ class OpenRouterProvider(AIProvider):
         # -------------------------------------------------
         # Future Tool Support
         # -------------------------------------------------
-        if hasattr(request, "tool_schema"):
-            if request.tool_schema:
-                payload["tools"] = request.tool_schema
+        if getattr(request, "tool_schema", None):
+            payload["tools"] = request.tool_schema
 
         headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "http://localhost:8000",
-            "X-Title": "AI Core Service",
+            "HTTP-Referer": self.REFERER,
+            "X-Title": self.APP_NAME,
         }
 
         response = await self._client.post(
@@ -79,13 +85,10 @@ class OpenRouterProvider(AIProvider):
         )
 
         if response.status_code != 200:
-            print(
-                "OpenRouter Status:",
-                response.status_code,
-            )
-            print(
-                "OpenRouter Response:",
-                response.text,
+            self._logger.error(
+                "openrouter_request_failed",
+                status_code=response.status_code,
+                response=response.text,
             )
 
         try:
@@ -93,18 +96,29 @@ class OpenRouterProvider(AIProvider):
 
         except httpx.HTTPStatusError as exc:
             raise AIProviderError(
-                message="OpenRouter request failed.",
+                message=(
+                    f"OpenRouter request failed "
+                    f"(HTTP {response.status_code})."
+                ),
                 provider="openrouter",
             ) from exc
 
         data = response.json()
 
-        content = data["choices"][0]["message"]["content"]
+        choices = data.get("choices", [])
 
-        stop_reason = (
-            data["choices"][0].get("finish_reason")
-            if "choices" in data
-            else None
+        if not choices:
+            raise AIProviderError(
+                message="OpenRouter returned no choices.",
+                provider="openrouter",
+            )
+
+        message = choices[0].get("message", {})
+
+        content = message.get("content", "")
+
+        stop_reason = choices[0].get(
+            "finish_reason",
         )
 
         return AIResponse(
@@ -116,7 +130,7 @@ class OpenRouterProvider(AIProvider):
 
     async def close(self) -> None:
         """
-        Close the HTTP client.
+        Close the underlying HTTP client.
         """
 
         await self._client.aclose()

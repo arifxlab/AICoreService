@@ -3,26 +3,35 @@ Application logging configuration.
 """
 
 import structlog
+from structlog.stdlib import LoggerFactory
+
+_logger = None
 
 
 def configure_logging() -> None:
     """
-    Configure structured logging.
+    Configure structured application logging.
     """
 
     structlog.configure(
+        logger_factory=LoggerFactory(),
         processors=[
             structlog.processors.TimeStamper(
-                fmt="iso"
+                fmt="iso",
             ),
             structlog.processors.JSONRenderer(),
-        ]
+        ],
     )
 
 
-def get_logger():
+def get_logger() -> structlog.BoundLogger:
     """
-    Return application logger.
+    Return the shared application logger.
     """
 
-    return structlog.get_logger()
+    global _logger
+
+    if _logger is None:
+        _logger = structlog.get_logger()
+
+    return _logger

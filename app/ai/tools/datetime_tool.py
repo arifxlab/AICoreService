@@ -10,11 +10,17 @@ from app.ai.tools.tool_schema import ToolDefinition
 
 class DateTimeTool(BaseTool):
     """
-    Returns current system date and time.
+    Tool that returns the current system date and time.
     """
+
+    DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     @property
     def definition(self) -> ToolDefinition:
+        """
+        Return the tool definition.
+        """
+
         return ToolDefinition(
             name="datetime",
             description="Returns the current system date and time.",
@@ -27,9 +33,12 @@ class DateTimeTool(BaseTool):
         arguments: str,
     ) -> str:
         """
-        Execute tool.
+        Return the current date and time.
+
+        The ``arguments`` parameter is accepted for consistency with the
+        BaseTool interface but is not used by this tool.
         """
 
         return datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"
+            self.DATETIME_FORMAT
         )

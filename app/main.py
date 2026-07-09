@@ -10,9 +10,10 @@ from app.core.handlers import ai_provider_exception_handler
 from app.core.logging import configure_logging
 from app.core.settings import get_settings
 
-
+# Configure application logging.
 configure_logging()
 
+# Load application settings.
 settings = get_settings()
 
 
@@ -20,20 +21,27 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     debug=settings.debug,
+    description=(
+        "AI Core Service providing LLM access, "
+        "tool execution, and structured AI responses."
+    ),
+    openapi_tags=[
+        {"name": "Chat", "description": "AI chat endpoints"},
+        {"name": "Health", "description": "Health check endpoint"},
+        {"name": "Metrics", "description": "Application metrics"},
+    ],
 )
 
 
-# Exception handlers
+# Register exception handlers.
 app.add_exception_handler(
     AIProviderError,
     ai_provider_exception_handler,
 )
 
 
-# API Routes
-app.include_router(
-    api_router,
-)
+# Register API routes.
+app.include_router(api_router)
 
 
 @app.get("/")
@@ -43,18 +51,5 @@ async def root() -> dict[str, str]:
     """
 
     return {
-        "message": f"Welcome to {settings.app_name}",
-    }
-
-
-@app.get("/health")
-async def health() -> dict[str, str]:
-    """
-    Health check endpoint.
-    """
-
-    return {
-        "status": "healthy",
-        "environment": settings.environment,
-        "version": settings.app_version,
+        "message": f"{settings.app_name} is running successfully."
     }

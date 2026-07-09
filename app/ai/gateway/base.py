@@ -1,5 +1,5 @@
 """
-AI Gateway interface.
+AI gateway interface.
 """
 
 from abc import ABC, abstractmethod
@@ -9,7 +9,10 @@ from app.ai.schemas.ai import AIRequest, AIResponse
 
 class AIGateway(ABC):
     """
-    Abstract AI gateway contract.
+    Abstract interface for AI gateway implementations.
+
+    Gateway implementations are responsible for routing AI requests
+    to the configured provider and returning standardized responses.
     """
 
     @abstractmethod
@@ -18,7 +21,12 @@ class AIGateway(ABC):
         request: AIRequest,
     ) -> AIResponse:
         """
-        Generate AI response through gateway.
-        """
+        Generate an AI response for the given request.
 
-        pass
+        Args:
+            request: The validated AI request.
+
+        Returns:
+            A standardized AI response.
+        """
+        ...

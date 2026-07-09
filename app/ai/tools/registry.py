@@ -9,10 +9,17 @@ from app.ai.tools.datetime_tool import DateTimeTool
 
 class ToolRegistry:
     """
-    Stores available AI tools.
+    Maintains a registry of all available AI tools.
+
+    The registry provides methods to retrieve tools by name
+    and to expose their definitions in the format expected by
+    OpenAI/OpenRouter function calling APIs.
     """
 
     def __init__(self) -> None:
+        """
+        Initialize the available tools.
+        """
 
         self._tools: dict[str, BaseTool] = {
             "calculator": CalculatorTool(),
@@ -23,12 +30,27 @@ class ToolRegistry:
         self,
         name: str,
     ) -> BaseTool | None:
+        """
+        Retrieve a tool by its registered name.
+
+        Args:
+            name: Name of the tool.
+
+        Returns:
+            The requested tool if found; otherwise None.
+        """
 
         return self._tools.get(name)
 
     def all(
         self,
     ) -> dict[str, BaseTool]:
+        """
+        Return all registered tools.
+
+        Returns:
+            Dictionary containing all registered tools.
+        """
 
         return self._tools
 
@@ -36,16 +58,20 @@ class ToolRegistry:
         self,
     ) -> list[dict]:
         """
-        Convert tools into OpenRouter/OpenAI function format.
+        Convert registered tools into the OpenAI/OpenRouter
+        function-calling schema.
+
+        Returns:
+            A list of function definitions compatible with
+            OpenAI/OpenRouter tool calling.
         """
 
-        definitions = []
+        tool_definitions: list[dict] = []
 
         for tool in self._tools.values():
-
             schema = tool.definition
 
-            definitions.append(
+            tool_definitions.append(
                 {
                     "type": "function",
                     "function": {
@@ -63,4 +89,4 @@ class ToolRegistry:
                 }
             )
 
-        return definitions
+        return tool_definitions

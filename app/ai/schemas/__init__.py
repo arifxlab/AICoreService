@@ -1,3 +1,7 @@
+"""
+AI schema exports.
+"""
+
 from app.ai.schemas.ai import (
     AIRequest,
     AIResponse,

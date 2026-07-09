@@ -8,26 +8,28 @@ from app.ai.gateway.base import AIGateway
 from app.ai.providers.base import AIProvider
 from app.ai.schemas.ai import AIRequest, AIResponse
 from app.core.logging import get_logger
+from app.core.metrics import metrics
 
 
 class DefaultAIGateway(AIGateway):
     """
-    Gateway responsible for AI request routing.
+    Routes AI requests to the configured provider while
+    collecting latency metrics and logging execution details.
     """
 
     def __init__(
         self,
         provider: AIProvider,
     ) -> None:
-        self._provider = provider
         self._logger = get_logger()
+        self._provider = provider
 
     async def generate(
         self,
         request: AIRequest,
     ) -> AIResponse:
         """
-        Forward request to configured provider.
+        Forward a request to the configured AI provider.
         """
 
         start = perf_counter()
@@ -37,20 +39,23 @@ class DefaultAIGateway(AIGateway):
             provider=self._provider.__class__.__name__,
         )
 
-        response = await self._provider.generate(
-            request
-        )
+        try:
+            response = await self._provider.generate(
+                request
+            )
 
-        latency_ms = round(
-            (perf_counter() - start) * 1000,
-            2,
-        )
+            return response
 
-        self._logger.info(
-            "gateway_request_completed",
-            provider=response.provider,
-            model=response.model,
-            latency_ms=latency_ms,
-        )
+        finally:
+            latency_ms = round(
+                (perf_counter() - start) * 1000,
+                2,
+            )
 
-        return response
+            metrics.total_latency_ms += latency_ms
+
+            self._logger.info(
+                "gateway_request_completed",
+                provider=self._provider.__class__.__name__,
+                latency_ms=latency_ms,
+            )

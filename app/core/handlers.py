@@ -1,5 +1,5 @@
 """
-FastAPI exception handlers.
+Custom FastAPI exception handlers.
 """
 
 from fastapi import Request
@@ -9,11 +9,14 @@ from app.core.exceptions import AIProviderError
 
 
 async def ai_provider_exception_handler(
-    request: Request,
+    _request: Request,
     exc: AIProviderError,
 ) -> JSONResponse:
     """
     Handle AI provider failures.
+
+    Returns a standardized JSON response whenever an
+    AI provider request cannot be completed.
     """
 
     return JSONResponse(

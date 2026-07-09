@@ -1,9 +1,31 @@
 [project]
 name = "ai-core-service"
-version = "0.1.0"
-description = "Production-ready AI Core Service with Portkey gateway, Claude integration, structured outputs, tool calling, and guardrails."
+version = "1.0.0"
+description = "Production-ready AI Core Service with AI gateway abstraction, tool calling, structured outputs, guardrails, and observability."
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
+
+authors = [
+    { name = "Arif Khan" }
+]
+
+keywords = [
+    "ai",
+    "fastapi",
+    "backend",
+    "llm",
+    "openrouter",
+    "tool-calling",
+    "structured-output",
+    "guardrails",
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Framework :: FastAPI",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 
 dependencies = [
     "anthropic>=0.116.0",
@@ -21,6 +43,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "black>=26.5.1",
+    "httpx>=0.28.1",
     "mypy>=2.2.0",
     "pre-commit>=4.6.0",
     "pytest>=9.1.1",
@@ -45,3 +68,24 @@ select = [
     "UP",
     "B",
 ]
+
+ignore = [
+    "B008",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["app"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

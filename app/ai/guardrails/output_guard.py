@@ -7,27 +7,37 @@ from app.ai.schemas.ai import AIResponse
 
 class OutputGuardrail:
     """
-    Validates AI responses.
+    Validates AI-generated responses before they are returned
+    to the client.
     """
 
-    MAX_RESPONSE_LENGTH = 10000
+    MAX_RESPONSE_LENGTH: int = 10_000
 
     def validate(
         self,
         response: AIResponse,
     ) -> AIResponse:
         """
-        Validate AI output.
+        Validate the AI response content.
+
+        Ensures that:
+        - The response is not empty.
+        - The response does not exceed the maximum allowed length.
+        - Whitespace is normalized before returning.
         """
 
-        if not response.content.strip():
+        content = response.content.strip()
+
+        if not content:
             raise ValueError(
                 "AI response is empty."
             )
 
-        if len(response.content) > self.MAX_RESPONSE_LENGTH:
+        if len(content) > self.MAX_RESPONSE_LENGTH:
             raise ValueError(
-                "AI response exceeds limit."
+                "AI response exceeds the maximum allowed length."
             )
+
+        response.content = content
 
         return response

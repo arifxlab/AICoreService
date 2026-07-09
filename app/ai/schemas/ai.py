@@ -1,5 +1,5 @@
 """
-Schemas shared across the AI Core Service.
+Shared request and response schemas used throughout the AI Core Service.
 """
 
 from pydantic import BaseModel, Field
@@ -7,47 +7,62 @@ from pydantic import BaseModel, Field
 
 class AIRequest(BaseModel):
     """
-    Request sent to an AI provider.
+    Represents a request sent to an AI provider.
     """
 
     system_prompt: str | None = Field(
         default=None,
-        description="Optional system prompt.",
+        description="Optional system instruction provided to the language model.",
     )
 
     user_prompt: str = Field(
         ...,
-        description="User prompt.",
+        description="The user's input prompt.",
     )
 
     model: str = Field(
         ...,
-        description="Model name.",
+        description="Identifier of the AI model to use.",
     )
 
     temperature: float = Field(
         default=0.0,
         ge=0.0,
         le=1.0,
-        description="Sampling temperature.",
+        description=(
+            "Sampling temperature controlling response randomness. "
+            "Lower values produce more deterministic outputs."
+        ),
     )
 
     max_tokens: int = Field(
         default=1024,
         gt=0,
-        description="Maximum response tokens.",
+        description="Maximum number of tokens the model may generate.",
     )
 
 
 class AIResponse(BaseModel):
     """
-    Standard AI response.
+    Standardized response returned by an AI provider or tool.
     """
 
-    content: str
+    content: str = Field(
+        ...,
+        description="Generated response content.",
+    )
 
-    provider: str
+    provider: str = Field(
+        ...,
+        description="Provider that generated the response.",
+    )
 
-    model: str
+    model: str = Field(
+        ...,
+        description="Model that generated the response.",
+    )
 
-    stop_reason: str | None = None
+    stop_reason: str | None = Field(
+        default=None,
+        description="Reason generation stopped, if provided by the AI provider.",
+    )

@@ -1,5 +1,5 @@
 """
-Tool schema definitions.
+Schema definitions for AI tools.
 """
 
 from pydantic import BaseModel, Field
@@ -7,27 +7,41 @@ from pydantic import BaseModel, Field
 
 class ToolParameter(BaseModel):
     """
-    Describes one tool parameter.
+    Represents a single tool parameter.
     """
 
-    type: str
+    type: str = Field(
+        ...,
+        description="Data type of the parameter.",
+    )
 
-    description: str
+    description: str = Field(
+        ...,
+        description="Description of the parameter.",
+    )
 
 
 class ToolDefinition(BaseModel):
     """
-    Describes an AI callable tool.
+    Metadata describing an AI tool.
     """
 
-    name: str
+    name: str = Field(
+        ...,
+        description="Unique tool name.",
+    )
 
-    description: str
+    description: str = Field(
+        ...,
+        description="Description of the tool.",
+    )
 
     properties: dict[str, ToolParameter] = Field(
-        default_factory=dict
+        default_factory=dict,
+        description="Tool input parameters.",
     )
 
     required: list[str] = Field(
-        default_factory=list
+        default_factory=list,
+        description="Required parameter names.",
     )

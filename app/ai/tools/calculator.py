@@ -1,5 +1,5 @@
 """
-Calculator tool.
+Calculator tool implementation.
 """
 
 from app.ai.tools.base import BaseTool
@@ -11,19 +11,25 @@ from app.ai.tools.tool_schema import (
 
 class CalculatorTool(BaseTool):
     """
-    Performs basic mathematical calculations.
+    Tool for evaluating simple mathematical expressions.
     """
 
     @property
     def definition(self) -> ToolDefinition:
+        """
+        Return the calculator tool definition.
+        """
+
         return ToolDefinition(
             name="calculator",
             description="Evaluate a mathematical expression.",
             properties={
                 "expression": ToolParameter(
                     type="string",
-                    description="The mathematical expression to evaluate.",
-                )
+                    description=(
+                        "The mathematical expression to evaluate."
+                    ),
+                ),
             },
             required=["expression"],
         )
@@ -33,13 +39,23 @@ class CalculatorTool(BaseTool):
         arguments: str,
     ) -> str:
         """
-        Execute calculation.
+        Evaluate a mathematical expression.
+
+        Args:
+            arguments: Mathematical expression supplied by the user.
+
+        Returns:
+            Result of the evaluated expression or an error message.
         """
+
+        safe_globals = {
+            "__builtins__": {},
+        }
 
         try:
             result = eval(
                 arguments,
-                {"__builtins__": {}},
+                safe_globals,
                 {},
             )
 

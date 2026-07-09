@@ -1,5 +1,5 @@
 """
-Application dependencies.
+Application dependency providers.
 """
 
 from functools import lru_cache
@@ -12,13 +12,14 @@ from app.ai.services.ai_service import AIService
 from app.ai.tools.registry import ToolRegistry
 from app.core.settings import get_settings
 
-import json
-from app.ai.schemas.structured import SummaryResponse
 
 @lru_cache
 def get_provider() -> AIProvider:
     """
-    Return configured AI provider.
+    Return the configured AI provider instance.
+
+    The provider is cached to ensure a single shared instance
+    throughout the application's lifetime.
     """
 
     settings = get_settings()
@@ -29,18 +30,24 @@ def get_provider() -> AIProvider:
 @lru_cache
 def get_gateway() -> AIGateway:
     """
-    Return configured AI gateway.
+    Return the application's AI gateway.
+
+    The gateway coordinates communication between the service
+    layer and the configured AI provider.
     """
 
     return DefaultAIGateway(
-        provider=get_provider()
+        provider=get_provider(),
     )
 
 
 @lru_cache
 def get_tool_registry() -> ToolRegistry:
     """
-    Return tool registry.
+    Return the application's tool registry.
+
+    The registry maintains all available AI tools and is shared
+    across the application.
     """
 
     return ToolRegistry()
@@ -49,7 +56,11 @@ def get_tool_registry() -> ToolRegistry:
 @lru_cache
 def get_ai_service() -> AIService:
     """
-    Return AI service instance.
+    Return the application's AI service.
+
+    The service orchestrates guardrails, tools, and the AI gateway.
+    A cached instance is used to avoid recreating dependencies
+    for every request.
     """
 
     return AIService(
