@@ -57,9 +57,7 @@ class AIService:
             # -------------------------
             # Validate Request
             # -------------------------
-            validated_request = self._input_guard.validate(
-                request
-            )
+            validated_request = self._input_guard.validate(request)
 
             prompt = validated_request.user_prompt.lower()
 
@@ -93,10 +91,7 @@ class AIService:
             # -------------------------
             # DateTime Tool
             # -------------------------
-            if (
-                "current date" in prompt
-                or "current time" in prompt
-            ):
+            if "current date" in prompt or "current time" in prompt:
 
                 tool = self._tools.get("datetime")
 
@@ -130,19 +125,15 @@ class AIService:
                             "{\n"
                             '  "summary": "...",\n'
                             '  "keywords": ["...", "..."]\n'
-                            "}\n\n"
-                            + validated_request.user_prompt[10:].strip()
+                            "}\n\n" + validated_request.user_prompt[10:].strip()
                         )
                     }
                 )
 
-                response = await self._gateway.generate(
-                    structured_request
-                )
+                response = await self._gateway.generate(structured_request)
 
                 content = (
-                    response.content
-                    .replace("```json", "")
+                    response.content.replace("```json", "")
                     .replace("```JSON", "")
                     .replace("```", "")
                     .strip()
@@ -150,9 +141,7 @@ class AIService:
 
                 data = json.loads(content)
 
-                structured = SummaryResponse(
-                    **data
-                )
+                structured = SummaryResponse(**data)
 
                 metrics.provider_calls += 1
                 metrics.successful_requests += 1
@@ -164,9 +153,7 @@ class AIService:
                 )
 
                 return AIResponse(
-                    content=structured.model_dump_json(
-                        indent=2
-                    ),
+                    content=structured.model_dump_json(indent=2),
                     provider=response.provider,
                     model=response.model,
                 )
@@ -174,13 +161,9 @@ class AIService:
             # -------------------------
             # Standard LLM Request
             # -------------------------
-            response = await self._gateway.generate(
-                validated_request
-            )
+            response = await self._gateway.generate(validated_request)
 
-            validated_response = self._output_guard.validate(
-                response
-            )
+            validated_response = self._output_guard.validate(response)
 
             metrics.provider_calls += 1
             metrics.successful_requests += 1

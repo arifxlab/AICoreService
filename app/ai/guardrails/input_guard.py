@@ -29,13 +29,9 @@ class InputGuardrail:
         prompt = request.user_prompt.strip()
 
         if not prompt:
-            raise ValueError(
-                "User prompt cannot be empty."
-            )
+            raise ValueError("User prompt cannot be empty.")
 
         if len(prompt) > self.MAX_PROMPT_LENGTH:
-            raise ValueError(
-                "User prompt exceeds the maximum allowed length."
-            )
+            raise ValueError("User prompt exceeds the maximum allowed length.")
 
         return request

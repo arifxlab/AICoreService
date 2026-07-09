@@ -50,6 +50,4 @@ async def root() -> dict[str, str]:
     Root endpoint.
     """
 
-    return {
-        "message": f"{settings.app_name} is running successfully."
-    }
+    return {"message": f"{settings.app_name} is running successfully."}

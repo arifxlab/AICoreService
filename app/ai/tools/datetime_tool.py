@@ -39,6 +39,4 @@ class DateTimeTool(BaseTool):
         BaseTool interface but is not used by this tool.
         """
 
-        return datetime.now().strftime(
-            self.DATETIME_FORMAT
-        )
+        return datetime.now().strftime(self.DATETIME_FORMAT)

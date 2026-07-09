@@ -97,8 +97,7 @@ class OpenRouterProvider(AIProvider):
         except httpx.HTTPStatusError as exc:
             raise AIProviderError(
                 message=(
-                    f"OpenRouter request failed "
-                    f"(HTTP {response.status_code})."
+                    f"OpenRouter request failed " f"(HTTP {response.status_code})."
                 ),
                 provider="openrouter",
             ) from exc

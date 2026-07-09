@@ -26,9 +26,7 @@ class CalculatorTool(BaseTool):
             properties={
                 "expression": ToolParameter(
                     type="string",
-                    description=(
-                        "The mathematical expression to evaluate."
-                    ),
+                    description=("The mathematical expression to evaluate."),
                 ),
             },
             required=["expression"],

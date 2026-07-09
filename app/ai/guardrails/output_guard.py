@@ -29,14 +29,10 @@ class OutputGuardrail:
         content = response.content.strip()
 
         if not content:
-            raise ValueError(
-                "AI response is empty."
-            )
+            raise ValueError("AI response is empty.")
 
         if len(content) > self.MAX_RESPONSE_LENGTH:
-            raise ValueError(
-                "AI response exceeds the maximum allowed length."
-            )
+            raise ValueError("AI response exceeds the maximum allowed length.")
 
         response.content = content
 

@@ -40,9 +40,7 @@ class DefaultAIGateway(AIGateway):
         )
 
         try:
-            response = await self._provider.generate(
-                request
-            )
+            response = await self._provider.generate(request)
 
             return response
 
